@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MTs DDI Kelurahan Baru - Game Dadu Keberuntungan</title>
+
+  <!-- PWA & Mobile Optimization for GitHub Pages -->
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Official Game Dadu Keberuntungan & Simulasi Kredit MTs DDI Kelurahan Baru. Optimized for GitHub Pages." />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome 6 Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti for Victory Fireworks -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            },
+            accent: {
+              gold: '#fbbf24',
+              goldDark: '#d97706',
+              neonBlue: '#38bdf8',
+              purple: '#c084fc'
+            }
+          },
+          keyframes: {
+            bounceSlow: {
+              '0%, 100%': { transform: 'translateY(-4%)' },
+              '50%': { transform: 'translateY(0)' },
+            }
+          },
+          animation: {
+            'bounce-slow': 'bounceSlow 3s infinite ease-in-out',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 60%, #020617 100%);
+      color: #f8fafc;
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Glassmorphic Cards */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .glass-nav {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* 3D Dice Scene Styling */
+    .dice-scene {
+      width: 86px;
+      height: 86px;
+      perspective: 600px;
+    }
+
+    .dice-cube {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.9s cubic-bezier(0.15, 0.85, 0.35, 1.2);
+    }
+
+    .dice-face {
+      position: absolute;
+      width: 86px;
+      height: 86px;
+      background: linear-gradient(145deg, #ffffff, #f1f5f9);
+      border: 2px solid #cbd5e1;
+      border-radius: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      padding: 9px;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2), 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .dot {
+      display: block;
+      width: 14px;
+      height: 14px;
+      background-color: #0f172a;
+      border-radius: 50%;
+      align-self: center;
+      justify-self: center;
+      box-shadow: inset 0 2px 3px rgba(0,0,0,0.6);
+    }
+
+    .dot.red {
+      background-color: #ef4444;
+      box-shadow: inset 0 2px 4px rgba(153, 27, 27, 0.8);
+    }
+
+    /* Face orientations */
+    .front  { transform: rotateY(0deg) translateZ(43px); }
+    .back   { transform: rotateY(180deg) translateZ(43px); }
+    .right  { transform: rotateY(90deg) translateZ(43px); }
+    .left   { transform: rotateY(-90deg) translateZ(43px); }
+    .top    { transform: rotateX(90deg) translateZ(43px); }
+    .bottom { transform: rotateX(-90deg) translateZ(43px); }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    .pulse-glow {
+      animation: pulseGlow 2.5s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 32px rgba(16, 185, 129, 0.85); }
+    }
+
+    /* Print styles for simulated receipts */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #receiptContainer, #receiptContainer * {
+        visibility: visible;
+      }
+      #receiptContainer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        color: #000;
+        background: #fff;
+      }
+    }
+  </style>
+</head>
+<body class="relative min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+  <!-- Background Particle Canvas -->
+  <canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+  <header class="glass-nav sticky top-0 z-30 px-4 py-3 shadow-lg">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-600 via-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 text-xl font-black">
+          <i class="fa-solid fa-dice-d6"></i>
+        </div>
+        <div>
+          <h1 class="text-sm sm:text-base font-extrabold text-white tracking-wide flex items-center gap-2 leading-tight">
+            MTs DDI Kelurahan Baru
+            <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full hidden sm:inline-block">GitHub Version</span>
+          </h1>
+          <p class="text-[11px] text-slate-400">Portal Game Dadu & Simulasi Pencairan Saldo</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center gap-2.5">
+        
+        <!-- Sound Toggle Button -->
+        <button id="soundToggleBtn" onclick="toggleSound()" class="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 flex items-center justify-center text-slate-300 transition" title="Toggle Sound Effects">
+          <i id="soundIcon" class="fa-solid fa-volume-high text-brand-400"></i>
+        </button>
+
+        <!-- Rules & Info Button -->
+        <button onclick="openRulesModal()" class="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 flex items-center justify-center text-slate-300 transition" title="Panduan Permainan">
+          <i class="fa-solid fa-circle-question text-sky-400"></i>
+        </button>
+
+        <!-- Credit Balance Badge -->
+        <div class="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-500/40 px-3 py-1.5 rounded-2xl shadow-inner">
+          <i class="fa-solid fa-coins text-amber-400 text-base animate-bounce-slow"></i>
+          <div>
+            <div class="text-[9px] text-amber-300/80 uppercase font-bold tracking-wider">Saldo Koin</div>
+            <div class="text-xs sm:text-sm font-black text-amber-400 leading-none" id="headerCoins">0</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="relative z-10 flex-grow flex items-center justify-center p-3 sm:p-6">
+    
+    <div id="startScreen" class="max-w-xl w-full glass-card rounded-3xl p-6 sm:p-10 text-center transition-all duration-500 my-auto">
+      <div class="inline-flex p-4 rounded-2xl bg-gradient-to-tr from-brand-600/30 to-emerald-400/20 border border-brand-500/40 text-emerald-400 mb-5 text-4xl shadow-xl">
+        <i class="fa-solid fa-dice text-brand-400"></i>
+      </div>
+      
+      <span class="block text-xs font-bold tracking-widest text-emerald-400 uppercase mb-1">Aplikasi Resmi GitHub Pages</span>
+      <h2 class="text-2xl sm:text-3xl font-black text-white mb-3">MTs DDI Kelurahan Baru</h2>
+      <p class="text-slate-300 text-xs sm:text-sm mb-6 leading-relaxed">
+        Selamat datang di Game Dadu Keberuntungan interaktif 3D! Kumpulkan Koin Keberuntungan, nikmati bonus lipat ganda hingga <b>x5</b>, dan simulasikan pencairan saldo ke E-Wallet & Bank.
+      </p>
+
+      <!-- Key Features -->
+      <div class="grid grid-cols-3 gap-2.5 mb-8 text-left">
+        <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-2xl text-center">
+          <i class="fa-solid fa-cubes text-emerald-400 text-lg mb-1"></i>
+          <div class="text-xs font-bold text-white">Animasi 3D</div>
+          <div class="text-[10px] text-slate-400">Realistis</div>
+        </div>
+        <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-2xl text-center">
+          <i class="fa-solid fa-bolt text-amber-400 text-lg mb-1"></i>
+          <div class="text-xs font-bold text-white">Streak Bonus</div>
+          <div class="text-[10px] text-slate-400">Sistem VIP</div>
+        </div>
+        <div class="bg-slate-900/60 border border-slate-800 p-3 rounded-2xl text-center">
+          <i class="fa-solid fa-wallet text-sky-400 text-lg mb-1"></i>
+          <div class="text-xs font-bold text-white">Withdrawal</div>
+          <div class="text-[10px] text-slate-400">E-Wallet & Bank</div>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button onclick="startGame()" class="pulse-glow w-full py-4 rounded-2xl bg-gradient-to-r from-brand-500 via-emerald-600 to-teal-600 hover:from-brand-600 hover:to-teal-700 text-white font-extrabold text-base sm:text-lg tracking-wider shadow-2xl transition transform hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-3">
+        <i class="fa-solid fa-play"></i> MULAI PERMAINAN SEKARANG
+      </button>
+
+      <div class="mt-4 text-[11px] text-slate-400 flex items-center justify-center gap-1">
+        <i class="fa-brands fa-github text-slate-400"></i> Ready for GitHub Pages Deployment
+      </div>
+    </div>
+
+    <div id="gameHub" class="hidden max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-5 my-auto">
+      
+      <!-- LEFT GAMING PANEL (8 Cols) -->
+      <div class="lg:col-span-8 flex flex-col gap-5">
+        
+        <!-- Game Stage Card -->
+        <div class="glass-card rounded-3xl p-4 sm:p-6 relative overflow-hidden">
+          
+          <!-- Game Header Status -->
+          <div class="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-700/60">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <span class="text-xs font-bold text-slate-200">Meja Dadu 3D Ready</span>
+            </div>
+
+            <!-- Player Streak Badge -->
+            <div class="flex items-center gap-3">
+              <div class="text-right">
+                <div class="text-[10px] text-slate-400">Winning Streak</div>
+                <div class="text-xs font-black text-amber-400" id="streakDisplay">0x Win</div>
+              </div>
+              <div class="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-xs font-black">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3D DICE DISPLAY ARENA -->
+          <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-6 mb-5 flex flex-col items-center justify-center relative min-h-[190px]">
+            
+            <!-- 3D Dice Pair -->
+            <div class="flex items-center justify-center gap-8 sm:gap-14 py-3">
+              
+              <!-- Dice 1 -->
+              <div class="dice-scene">
+                <div id="dice1" class="dice-cube">
+                  <div class="dice-face front"><span class="dot red col-start-2 row-start-2"></span></div>
+                  <div class="dice-face back"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-3 row-start-3"></span></div>
+                  <div class="dice-face right"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-2 row-start-2"></span><span class="dot col-start-3 row-start-3"></span></div>
+                  <div class="dice-face left"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-3 row-start-1"></span><span class="dot col-start-1 row-start-3"></span><span class="dot col-start-3 row-start-3"></span></div>
+                  <div class="dice-face top"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-3 row-start-1"></span><span class="dot col-start-2 row-start-2"></span><span class="dot col-start-1 row-start-3"></span><span class="dot col-start-3 row-start-3"></span></div>
+                  <div class="dice-face bottom"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-3 row-start-1"></span><span class="dot col-start-1 row-start-2"></span><span class="dot col-start-3 row-start-2"></span><span class="dot col-start-1 row-start-3"></span><span class="dot col-start-3 row-start-3"></span></div>
+                </div>
+              </div>
+
+              <!-- Dice 2 -->
+              <div class="dice-scene">
+                <div id="dice2" class="dice-cube">
+                  <div class="dice-face front"><span class="dot red col-start-2 row-start-2"></span></div>
+                  <div class="dice-face back"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-3 row-start-3"></span></div>
+                  <div class="dice-face right"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-2 row-start-2"></span><span class="dot col-start-3 row-start-3"></span></div>
+                  <div class="dice-face left"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-3 row-start-1"></span><span class="dot col-start-1 row-start-3"></span><span class="dot col-start-3 row-start-3"></span></div>
+                  <div class="dice-face top"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-3 row-start-1"></span><span class="dot col-start-2 row-start-2"></span><span class="dot col-start-1 row-start-3"></span><span class="dot col-start-3 row-start-3"></span></div>
+                  <div class="dice-face bottom"><span class="dot col-start-1 row-start-1"></span><span class="dot col-start-3 row-start-1"></span><span class="dot col-start-1 row-start-2"></span><span class="dot col-start-3 row-start-2"></span><span class="dot col-start-1 row-start-3"></span><span class="dot col-start-3 row-start-3"></span></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Result Message Badge -->
+            <div id="resultMsg" class="min-h-[34px] text-center font-bold text-xs sm:text-sm mt-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/70 transition-all">
+              Pilih taruhan Anda lalu tekan tombol KOCOK DADU!
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex justify-between">
+              <span>Pilih Prediksi Angka</span>
+              <span class="text-slate-400 font-normal">Bonus Rate</span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2.5">
+              <!-- Small Bet -->
+              <button onclick="selectBet('small', this)" class="bet-card active bg-slate-800 hover:bg-slate-700/80 border-2 border-brand-500 rounded-2xl p-3 text-center transition relative overflow-hidden group">
+                <div class="text-[11px] font-bold text-slate-300 group-hover:text-white">KECIL</div>
+                <div class="text-base sm:text-lg font-black text-white my-0.5">2 - 6</div>
+                <div class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 rounded-md py-0.5 border border-emerald-500/20">Bayaran 2x</div>
+              </button>
+
+              <!-- Seven Bet -->
+              <button onclick="selectBet('seven', this)" class="bet-card bg-slate-800 hover:bg-slate-700/80 border-2 border-slate-700 rounded-2xl p-3 text-center transition relative overflow-hidden group">
+                <div class="text-[11px] font-bold text-slate-300 group-hover:text-white">ANGKA 7</div>
+                <div class="text-base sm:text-lg font-black text-amber-400 my-0.5">TEPAT 7</div>
+                <div class="text-[10px] font-bold text-amber-400 bg-amber-500/10 rounded-md py-0.5 border border-amber-500/20">Bayaran 5x</div>
+              </button>
+
+              <!-- Big Bet -->
+              <button onclick="selectBet('big', this)" class="bet-card bg-slate-800 hover:bg-slate-700/80 border-2 border-slate-700 rounded-2xl p-3 text-center transition relative overflow-hidden group">
+                <div class="text-[11px] font-bold text-slate-300 group-hover:text-white">BESAR</div>
+                <div class="text-base sm:text-lg font-black text-white my-0.5">8 - 12</div>
+                <div class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 rounded-md py-0.5 border border-emerald-500/20">Bayaran 2x</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- BET CHIP SELECTOR -->
+          <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-3.5 mb-5">
+            <div class="flex items-center justify-between mb-2.5">
+              <span class="text-xs text-slate-400">Taruhan Dipasang:</span>
+              <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-coins text-amber-400 text-xs"></i>
+                <span id="currentBetDisplay" class="text-base font-black text-amber-400">50</span>
+                <span class="text-xs text-slate-400">Koin</span>
+              </div>
+            </div>
+
+            <!-- Chips Selector Grid -->
+            <div class="grid grid-cols-5 gap-2">
+              <button onclick="addBet(50)" class="py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition">+50</button>
+              <button onclick="addBet(100)" class="py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition">+100</button>
+              <button onclick="addBet(500)" class="py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition">+500</button>
+              <button onclick="setAllIn()" class="py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 rounded-xl text-xs font-bold text-amber-400 transition">ALL IN</button>
+              <button onclick="resetBet()" class="py-2 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 rounded-xl text-xs font-bold text-rose-400 transition">Reset</button>
+            </div>
+          </div>
+
+          <!-- ROLL ACTION BUTTON -->
+          <button id="rollBtn" onclick="rollDice()" class="pulse-glow w-full py-4 rounded-2xl bg-gradient-to-r from-brand-500 via-emerald-600 to-teal-600 hover:from-brand-600 hover:to-teal-700 text-white font-black text-base sm:text-lg tracking-wider shadow-xl transition active:scale-[0.99] flex items-center justify-center gap-3">
+            <i class="fa-solid fa-dice text-xl"></i> KOCOK DADU SEKARA
